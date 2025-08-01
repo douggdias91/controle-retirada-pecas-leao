@@ -1,0 +1,13 @@
+
+<h2>Solicitação de Peças</h2>
+<form action="/solicitar" method="post">
+  Nome: <input type="text" name="nome"><br>
+  Peça:
+  <select name="peca">
+    {% for p in pecas %}
+      <option>{{ p['codigo'] }} - {{ p['descricao'] }}</option>
+    {% endfor %}
+  </select><br>
+  Observações: <input type="text" name="obs"><br>
+  <button type="submit">Solicitar PDF</button>
+</form>

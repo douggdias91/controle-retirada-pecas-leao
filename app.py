@@ -1,0 +1,74 @@
+
+from flask import Flask, render_template, request, redirect, send_file, session, url_for
+from werkzeug.utils import secure_filename
+import os
+import csv
+from datetime import datetime
+from utils.gerar_pdf import gerar_pdf
+
+app = Flask(__name__)
+app.secret_key = 'segredo'
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+senha_fixa = "Leao2025"
+
+def carregar_pecas():
+    pecas = []
+    try:
+        with open("pecas.csv", newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            pecas = [row for row in reader]
+    except FileNotFoundError:
+        pass
+    return pecas
+
+@app.route('/')
+def home():
+    pecas = carregar_pecas()
+    return render_template("index.html", pecas=pecas)
+
+@app.route('/solicitar', methods=['POST'])
+def solicitar():
+    nome = request.form['nome']
+    peca = request.form['peca']
+    obs = request.form['obs']
+    data = datetime.now().strftime("%d/%m/%Y %H:%M")
+    arquivo_pdf = gerar_pdf(nome, peca, obs, data)
+    return send_file(arquivo_pdf, as_attachment=True)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form['senha'] == senha_fixa:
+            session['logado'] = True
+            return redirect('/admin')
+    return render_template("login.html")
+
+@app.route('/admin')
+def admin():
+    if not session.get('logado'):
+        return redirect('/login')
+    return render_template("admin.html")
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if not session.get('logado'):
+        return redirect('/login')
+    file = request.files['arquivo']
+    if file:
+        filename = secure_filename("pecas.csv")
+        file.save(os.path.join('.', filename))
+    return redirect('/admin')
+
+@app.route('/add_peca', methods=['POST'])
+def add_peca():
+    if not session.get('logado'):
+        return redirect('/login')
+    with open("pecas.csv", "a", newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([request.form['codigo'], request.form['descricao']])
+    return redirect('/admin')
+
+if __name__ == "__main__":
+    app.run()
