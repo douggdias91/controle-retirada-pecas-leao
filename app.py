@@ -1,4 +1,4 @@
-
+import os
 from flask import Flask, render_template, request, redirect, send_file, session, url_for
 from werkzeug.utils import secure_filename
 import os
@@ -70,6 +70,9 @@ def add_peca():
         writer.writerow([request.form['codigo'], request.form['descricao']])
     return redirect('/admin')
 
+import os
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
