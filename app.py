@@ -1,15 +1,12 @@
 import os
-from flask import Flask, render_template, request, redirect, send_file, session, url_for
+from flask import Flask, render_template, request, redirect, send_file, session
 from werkzeug.utils import secure_filename
-import os
 import csv
 from datetime import datetime
 from utils.gerar_pdf import gerar_pdf
 
 app = Flask(__name__)
 app.secret_key = 'segredo'
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 senha_fixa = "Leao2025"
 
@@ -58,7 +55,7 @@ def upload():
     file = request.files['arquivo']
     if file:
         filename = secure_filename("pecas.csv")
-        file.save(os.path.join('.', filename))
+        file.save(filename)
     return redirect('/admin')
 
 @app.route('/add_peca', methods=['POST'])
@@ -70,9 +67,5 @@ def add_peca():
         writer.writerow([request.form['codigo'], request.form['descricao']])
     return redirect('/admin')
 
-import os
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-
